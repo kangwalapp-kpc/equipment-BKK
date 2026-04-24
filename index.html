@@ -1,0 +1,1097 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KPC App | อุปกรณ์สำรองหอ D</title>
+    <base target="_top">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f3f4f6; display: flex; justify-content: center; margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; }
+        .iphone-15-container { width: 100vw; max-width: 500px; height: 100vh; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; }
+        header { flex-shrink: 0; }
+        .category-scroll { flex-shrink: 0; display: flex; overflow-x: auto; white-space: nowrap; padding: 10px; gap: 8px; scrollbar-width: none; background: #fff; border-bottom: 1px solid #f3f4f6; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .content-area { flex-grow: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; padding-bottom: 100px; /* เว้นที่ให้ปุ่มลอย */ }
+        
+/* 1. ปุ่มสลับมุมมอง (น้ำเงิน) - อยู่บนสุด */
+.fab {
+  position: absolute;
+  bottom: 140px; /* ขยับขึ้นไปชั้นบน */
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #2563eb; 
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  z-index: 100;
+  border: none;
+}
+
+/* 2. ปุ่ม Export PDF (แดง) - อยู่ตรงกลาง */
+.pdf-btn {
+  position: absolute;
+  bottom: 80px; /* อยู่ระหว่างปุ่มน้ำเงินและเขียว */
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #ef4444; /* สีแดง PDF */
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  z-index: 100;
+  border: none;
+}
+/* ปรับแต่งช่อง Input ให้ดูเนียนตา */
+#searchInput {
+    -webkit-appearance: none; /* สำหรับ iOS */
+}
+
+/* ปรับระยะห่างระหว่างเลขกล่องกับช่องค้นหา */
+.category-scroll {
+    border-bottom: none; /* ลบเส้นใต้เลขกล่องออก เพราะจะมีช่องค้นหามาคั่นแทน */
+}
+.category-scroll {
+    /* ... โค้ดเดิมของคุณ ... */
+    scroll-behavior: smooth; /* ทำให้เวลาเลื่อนแล้วดูนุ่มนวลขึ้น */
+    cursor: grab; /* เปลี่ยนสัญลักษณ์เม้าส์ให้เป็นรูปมือ (เผื่อคนอยากคลิกค้างแล้วลาก) */
+}
+
+.category-scroll:active {
+    cursor: grabbing; /* ตอนคลิกค้างให้เป็นรูปมือกำ */
+}
+/* ปรับขนาดปุ่มเลขกล่องให้เล็กลงนิดนึงจะได้ไม่เกะกะ */
+.category-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+}
+/* 3. ปุ่มเพิ่มข้อมูล (เขียว) - อยู่ล่างสุด */
+.add-float-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: #27ae60;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 100;
+  border: none;
+}
+        
+        .grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .list-view { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .image-container { position: relative; width: 100%; aspect-ratio: 1/1; overflow: hidden; border-radius: 8px; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+      
+/* จัดวางตำแหน่งเลขกล่องให้อยู่มุมซ้ายบนของรูป */
+.badge-box {
+    position: absolute;
+    top: 5px;   /* ขยับขึ้นไปอีกนิด */
+    left: 5px;  /* ขยับไปทางซ้ายอีกหน่อย */
+    background: rgba(37, 99, 235, 0.85); /* จางลงนิดนึงเพื่อให้เห็นรูปข้างหลัง */
+    color: white;
+    font-size: 8px; /* ปรับขนาดตัวอักษรให้เล็กลงหน่อยสำหรับจอ 3 คอลัมน์ */
+    font-weight: bold;
+    padding: 2px 6px; 
+    border-radius: 4px; /* มนน้อยลงหน่อยให้ดูคม */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+      /* เพิ่มระยะเว้นช่วงล่างให้ Modal ดูโปร่งขึ้น */
+.modal-content-wrapper {
+    padding-bottom: 2.5rem; /* เพิ่มระยะห่างด้านล่าง */
+}
+/* เพิ่มระยะ Safe Area สำหรับมือถือรุ่นใหม่ */
+#detailModal .p-8 {
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+}
+
+/* ปรับความนุ่มนวลของเงา */
+.shadow-blue-200 {
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+}
+
+.shadow-green-100 {
+    box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.15);
+}
+
+/* ปรับ Scrollbar ของ Modal ให้ดูสะอาด */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 0px;
+}
+      
+/* ปรับให้ปุ่มมีระยะห่างจากขอบมากขึ้น */
+#actionButtons {
+    margin-top: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+/* ปรับปรุง Delete Button ให้ดูเบาลง ไม่แย่งสายตามากเกินไป */
+#deleteContainer {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* ปรับ CSS ของ badge-reserve (คงเหลือ) ให้ดูสมดุลขึ้น */
+.badge-reserve {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7); /* สีดำโปร่งแสง */
+    color: white;
+    font-size: 9px;
+    padding: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+        
+        .category-btn { padding: 6px 15px; border-radius: 50px; font-size: 13px; transition: all 0.2s; border: 1px solid #e5e7eb; } 
+        .btn-active { background-color: #2563eb; color: white; border-color: #2563eb; font-weight: bold; }
+        .btn-inactive { background-color: #f3f4f6; color: #4b5563; }
+        
+        footer { position: absolute; bottom: 0; left: 0; right: 0; background-color: #2563eb; color: white; text-align: center; padding: 10px; font-size: 0.75rem; z-index: 40; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+      /* แก้ไขตัวแจ้งเตือน (Toast) ให้แสดงผลหน้าสุด */
+/* ตัวแจ้งเตือน Toast */
+#toast {
+    position: fixed;
+    top: 20px;                  /* ระยะจากขอบบน */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #064e3b;  /* สีเขียวเข้มแบบในรูป */
+    color: white;
+    padding: 10px 25px;
+    border-radius: 12px;        /* ความมนของขอบ */
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999 !important;   /* ให้สูงกว่า Modal ทุกตัว */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;       /* ไม่ให้ขวางการคลิกส่วนอื่น */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+}
+
+/* ตั้งค่า Modal ให้ z-index ต่ำกว่า Toast */
+.modal-overlay, #detailModal, #addModal, #deleteConfirmModal {
+    z-index: 1000; 
+}
+    </style>
+<body>
+    <div class="iphone-15-container">
+        <header class="p-4 bg-blue-600 text-white text-center font-bold text-lg shadow-md relative">
+            <span id="headerTitle" class="transition-opacity duration-300">รายการอุปกรณ์ BKK</span>
+        </header>
+
+        <div class="category-scroll" id="categoryBar"></div>
+
+        <div class="px-4 py-3 bg-white">
+            <div class="relative flex items-center">
+                <i class="fas fa-search absolute left-4 text-gray-400 text-sm"></i>
+                <input type="text" id="searchInput" placeholder="พิมพ์ชื่ออุปกรณ์เพื่อค้นหา..." 
+                    class="w-full bg-gray-100 border border-gray-200 rounded-2xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all shadow-sm">
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="content" class="grid-view">
+                <div id="loading" class="col-span-full flex flex-col items-center justify-center py-20 w-full">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p class="mt-4 text-gray-500 text-sm font-medium">กำลังโหลดข้อมูล...</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="fab" id="viewSwitcher"><i class="fas fa-list-ul"></i></button>
+        <button class="pdf-btn" onclick="exportToPDF()" title="ส่งออก PDF"><i class="fas fa-file-pdf"></i></button>
+        <button class="add-float-btn" onclick="goAdd()"><i class="fas fa-plus"></i></button>
+        
+        <footer>ระบบบริหารจัดการอุปกรณ์สำรอง</footer>
+    </div>
+
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-[100]">
+        ✅ บันทึกข้อมูลเรียบร้อยแล้ว
+    </div>
+
+<div id="detailModal" onclick="checkClose(event)" class="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 hidden">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-[2.5rem] w-full max-w-sm max-h-[95vh] overflow-y-auto shadow-2xl relative animate-fadeIn">
+        
+        <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-md text-gray-500 active:scale-90 transition-transform">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <img id="modalImg" src="" class="w-full h-64 object-cover">
+
+        <div class="p-8 pb-12"> <div id="viewMode">
+                <div class="mb-6">
+                    <span class="inline-block bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full mb-2 uppercase tracking-wider">
+                        <i class="fas fa-building mr-1"></i> แผนก: <span id="modalCategory"></span>
+                    </span>
+                    <h2 id="modalTitle" class="font-bold text-2xl text-gray-900 leading-tight"></h2>
+                    <div id="modalDesc" class="text-sm text-gray-500 mt-2 leading-relaxed"></div>
+                </div>
+<div class="mt-2 flex items-center gap-2">
+    <i class="fas fa-id-card text-gray-400 text-xs"></i>
+    <span id="modalAssetInfo" class="text-xs font-bold text-orange-600"></span>
+</div>
+                <div id="stockControl" class="flex items-center justify-between bg-gray-50 p-5 rounded-[2rem] mb-8 border border-gray-100">
+                    <div>
+                        <span class="text-[10px] text-gray-400 uppercase font-black block mb-1">คงเหลือ</span>
+                        <div class="flex items-baseline gap-1">
+                            <span id="stockQty" class="text-3xl font-black text-blue-600">0</span>
+                            <span class="text-xs text-gray-400 font-bold">ชิ้น</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
+                        <button onclick="updateQty(-1)" class="w-9 h-9 rounded-xl bg-gray-50 text-blue-600 active:scale-90 transition-transform">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span id="orderQty" class="w-8 text-center font-bold text-lg">1</span>
+                        <button onclick="updateQty(1)" class="w-9 h-9 rounded-xl bg-gray-50 text-blue-600 active:scale-90 transition-transform">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="actionButtons" class="flex gap-3">
+                    <button id="orderBtn" onclick="submitOrder()" class="flex-[2.5] bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all">
+                        นำออก
+                    </button>
+                    <button onclick="addStock()" class="flex-1 bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-green-100 active:scale-95 transition-all">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button onclick="toggleEditMode(true)" class="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl active:bg-orange-50 active:text-orange-500 transition-all">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                </div>
+
+                <div id="deleteContainer" class="mt-8 pt-4 border-t border-gray-100 hidden">
+    <button onclick="confirmDelete()" class="w-full text-red-500 hover:text-red-700 active:scale-95 text-sm font-bold py-2 flex items-center justify-center gap-2 transition-all">
+        <i class="fas fa-trash-alt"></i> ลบรายการนี้
+    </button>
+  </div>
+            </div>
+
+            <div id="editMode" class="hidden animate-fadeIn">
+    <h3 class="text-orange-600 font-bold mb-4 flex items-center gap-2">
+        <i class="fas fa-edit"></i> แก้ไขข้อมูลอุปกรณ์
+    </h3>
+    
+    <div class="space-y-5">
+        <div>
+            <label class="text-[10px] text-gray-400 uppercase font-black ml-1">ชื่ออุปกรณ์</label>
+            <input type="text" id="editNameInput" 
+                class="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3 px-4 outline-none focus:border-orange-500 focus:bg-white font-bold text-lg transition-all shadow-sm" 
+                placeholder="ระบุชื่ออุปกรณ์...">
+        </div>
+     <div>
+            <label class="text-[10px] text-gray-400 uppercase font-black ml-1">หมายเลขทรัพย์สิน (Asset Info)</label>
+            <input type="text" id="editAssetInfoInput" 
+                class="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3 px-4 outline-none focus:border-orange-500 focus:bg-white font-bold text-lg transition-all shadow-sm" 
+                placeholder="ระบุ Section / หมายเลขทรัพย์สิน...">
+        </div>
+      <div>
+    <label class="text-[10px] text-gray-400 uppercase font-black ml-1">เลขกล่อง / หมวดหมู่</label>
+    <input type="text" id="editCategoryInput" 
+        class="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3 px-4 outline-none focus:border-orange-500 focus:bg-white font-bold text-lg transition-all shadow-sm" 
+        placeholder="ระบุเลขกล่องหรือหมวดหมู่...">
+</div>
+
+        <div>
+            <label class="text-[10px] text-gray-400 uppercase font-black ml-1">รายละเอียดเพิ่มเติม</label>
+            <textarea id="editDescInput" rows="3" 
+                class="w-full bg-gray-50 border-2 border-transparent rounded-2xl p-4 outline-none focus:border-orange-500 focus:bg-white text-sm transition-all resize-none shadow-sm" 
+                placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+        </div>
+
+        <div>
+            <label class="text-[10px] text-gray-400 uppercase font-black ml-1">รูปภาพอุปกรณ์</label>
+            <div class="mt-1">
+                <label class="flex items-center justify-center gap-3 bg-orange-50 text-orange-600 py-4 rounded-2xl cursor-pointer border-2 border-dashed border-orange-200 hover:bg-orange-100 transition-all active:scale-[0.98]">
+                    <i class="fas fa-camera text-xl"></i>
+                    <span id="fileNameDisplay" class="font-bold text-sm">เปลี่ยนรูปภาพใหม่</span>
+                    <input type="file" id="editImgFile" accept="image/*" class="hidden" onchange="previewFileName(this)">
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+            <button onclick="saveEdit()" class="flex-[2] bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-100 active:scale-95 transition-all">
+                บันทึกการแก้ไข
+            </button>
+            <button onclick="toggleEditMode(false)" class="flex-1 bg-gray-100 text-gray-500 py-4 rounded-2xl font-bold active:scale-95 transition-all">
+                ยกเลิก
+            </button>
+        </div>
+    </div>
+</div>
+
+        </div>
+    </div>
+</div>
+
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl w-full max-w-xs p-6 shadow-2xl text-center">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-exclamation-triangle text-2xl"></i></div>
+            <h3 class="font-bold text-lg">ยืนยันการลบ?</h3>
+            <p class="text-sm text-gray-500 my-2" id="deleteItemName"></p>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeDeleteModal()" class="flex-1 text-gray-500">ยกเลิก</button>
+                <button id="btnRealDelete" onclick="executeDelete()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">ลบเลย</button>
+            </div>
+        </div>
+    </div>
+
+   <div id="addModal" onclick="checkCloseAdd(event)" class="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 hidden">
+    <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-sm max-h-[95vh] overflow-y-auto shadow-2xl relative animate-fadeIn">
+        <header class="p-4 bg-green-600 text-white text-center font-bold sticky top-0 z-10">
+            เพิ่มรายการอุปกรณ์ใหม่
+            <button onclick="closeAddModal()" class="absolute right-4 top-4 text-white/80"><i class="fas fa-times"></i></button>
+        </header>
+        
+        <div class="p-6 space-y-4">
+            <div class="space-y-2">
+                <label class="text-[10px] text-gray-400 uppercase font-bold">รูปภาพอุปกรณ์</label>
+                <div id="addImgPreviewContainer" class="hidden w-full aspect-video rounded-xl overflow-hidden mb-2 border">
+                    <img id="addImgPreview" src="" class="w-full h-full object-cover">
+                </div>
+                <label class="flex items-center justify-center gap-2 bg-gray-100 text-gray-600 py-4 rounded-xl cursor-pointer border-2 border-dashed border-gray-300">
+                    <i class="fas fa-camera text-xl"></i>
+                    <span id="addFileNameDisplay" class="font-bold">เลือกรูปภาพ</span>
+                    <input type="file" id="addImgFile" accept="image/*" class="hidden" onchange="previewAddImage(this)">
+                </label>
+            </div>
+
+            <div>
+                <label class="text-[10px] text-gray-400 uppercase font-bold">ชื่ออุปกรณ์</label>
+                <input type="text" id="addName" placeholder="เช่น เครื่องคอมพิวเตอร์" 
+                    class="w-full border-b-2 border-gray-100 py-2 outline-none focus:border-green-500 font-bold transition-all">
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] text-gray-400 uppercase font-bold">แผนก</label>
+                
+                <div id="selectBoxGroup" class="flex gap-2">
+                    <select id="addCategorySelect" 
+                        class="flex-1 border-b-2 border-gray-100 py-2 outline-none focus:border-green-500 font-bold bg-white">
+                        <option value="">-- เลือกแผนก --</option>
+                        </select>
+                    <button onclick="showNewCategoryInput()" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-100">
+                        <i class="fas fa-plus"></i> แผนกใหม่
+                    </button>
+                </div>
+
+                <div id="newBoxGroup" class="hidden flex gap-2 animate-fadeIn">
+                    <input type="text" id="addCategory" placeholder="ระบุแผนกใหม่..." 
+                        class="flex-1 border-b-2 border-blue-400 py-2 outline-none font-bold text-blue-600">
+                    <button onclick="hideNewCategoryInput()" class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-xs font-bold">
+                        เลือกที่มีอยู่
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold">จำนวนเริ่มต้น</label>
+                    <input type="number" id="addQty" value="1" min="0" class="w-full border-b-2 border-gray-100 py-2 outline-none focus:border-green-500 font-bold">
+                </div>
+            </div>
+          <div>
+    <label class="text-[10px] text-gray-400 uppercase font-bold">หมายเลขทรัพย์สิน </label>
+    <input type="text" id="addAssetInfo" placeholder="เช่น BA-09-106995 " 
+        class="w-full border-b-2 border-gray-100 py-2 outline-none focus:border-green-500 font-bold transition-all">
+</div>
+            <div>
+              
+                <label class="text-[10px] text-gray-400 uppercase font-bold">รายละเอียดเพิ่มเติม</label>
+                <textarea id="addRemark" rows="2" class="w-full border-b-2 border-gray-100 py-2 outline-none focus:border-green-500 transition-all text-sm" placeholder="ระบุรายละเอียด..."></textarea>
+            </div>
+
+            <button onclick="submitNewItem()" class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg mt-4 active:scale-95 transition-transform">
+                บันทึกรายการใหม่
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+let data = [];
+let currentFilter = "All";
+let currentView = 'grid'; 
+let currentQty = 1;
+let currentItemData = null;
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwsz7JpaMm8oun368pgcLvitPPjoFrbrSB6gXZp6Zcsz3saXnhnBLqk1ivcYeIMpFI0/exec";
+
+function getDriveImageUrl(url) {
+    if (!url || url.includes('placehold.co')) return url;
+    const match = url.match(/[-\w]{25,}/);
+    if (match && url.includes('drive.google.com')) {
+        return `https://drive.google.com/thumbnail?sz=w1000&id=${match[0]}`;
+    }
+    return url;
+}
+// เพิ่มฟังก์ชันนี้เข้าไปในส่วน <script> ของ index.html
+function exportToPDF() {
+    showToast("กำลังเตรียมเปิดรายงาน PDF...");
+    
+    // เนื่องจากคุณแยกหน้า Index ไว้ที่ GitHub 
+    // แต่หน้า PDF อยู่ที่ Apps Script คุณต้องใช้ API_URL ในการเรียกครับ
+    const pdfUrl = API_URL + "?page=pdf";
+    
+    // เปิดหน้า PDF ใน Tab ใหม่
+    window.open(pdfUrl, "_blank");
+}
+// 1. ฟังก์ชันนี้อาจจะไม่จำเป็นต้องใช้ตรวจสอบ Drive แล้ว แต่แก้ให้รองรับ Base64 แทน
+function getImageUrl(url) {
+    if (!url || url.includes('placehold.co')) return "https://placehold.co/200x200?text=No+Image";
+    // ถ้าเป็น Base64 หรือ URL ปกติ ก็ให้ส่งค่ากลับไปได้เลย
+    return url;
+}
+
+async function loadData() {
+    const container = document.getElementById('content');
+    try {
+        const res = await fetch(API_URL + "?action=getData");
+        const json = await res.json();
+        data = json.map(item => ({
+            title: item.name || "-",
+            img: getImageUrl(item.img), 
+            category: item.category || "อื่นๆ",
+            qty: Number(item.qty) || 0,
+            assetInfo: item.assetInfo || "-",  
+            desc: item.remark || "",
+            id: item.id
+        }));
+
+        // ส่วนที่เหลือคงเดิม...
+        data.sort((a, b) => {
+            return String(a.category).localeCompare(String(b.category), undefined, { numeric: true });
+        });
+        
+        const categories = ["All", ...new Set(data.map(i => i.category))];
+        renderCategoryButtons(categories);
+        if (!categories.includes(currentFilter)) currentFilter = "All";
+        filterData(currentFilter);
+
+    } catch (error) {
+        container.innerHTML = "<p class='text-center p-10 text-red-500'>โหลดข้อมูลไม่สำเร็จ</p>";
+    }
+}
+
+function openEditMode() {
+    if (!currentItemData) return;
+    
+    // ส่งไปที่หน้า Form พร้อมพารามิเตอร์ action=edit และ id
+    // หมายเหตุ: คุณต้องไปปรับที่หน้ากูเกิลฟอร์ม/สคริปต์ปลายทางให้รองรับโหมดแก้ไขด้วยนะครับ
+    const editUrl = `${API_URL}?page=form&action=edit&id=${currentItemData.id}`;
+    window.open(editUrl, "_top");
+}
+function renderCategoryButtons(categories) {
+    const categoryBar = document.getElementById('categoryBar');
+    categoryBar.innerHTML = ''; 
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.innerText = cat;
+        btn.className = `category-btn ${currentFilter === cat ? 'btn-active' : 'btn-inactive'}`;
+        btn.onclick = () => { currentFilter = cat; renderCategoryButtons(categories); filterData(cat); };
+        categoryBar.appendChild(btn);
+    });
+}
+
+function filterData(selectedCat) {
+    const container = document.getElementById('content');
+    container.innerHTML = ''; 
+    const filtered = selectedCat === "All" ? data : data.filter(item => item.category === selectedCat);
+    if (filtered.length === 0) { container.innerHTML = "<p class='col-span-full text-center p-10'>ไม่พบรายการ</p>"; return; }
+
+    filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "card bg-white border rounded-xl overflow-hidden shadow-sm animate-fadeIn cursor-pointer";
+        card.onclick = () => openModal(item.id);
+        card.innerHTML = `
+            <div class="image-container">
+                <img src="${item.img}" class="card-img" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                <div class="badge-reserve">${item.qty} ชิ้น</div>
+            </div>
+            <div class="p-2">
+                <h3 class="font-bold text-[10px] truncate">${item.title}</h3>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+  function previewFileName(input) {
+    const fileDisplay = document.getElementById('fileNameDisplay');
+    if (input.files && input.files[0]) {
+        // แสดงชื่อไฟล์ที่เลือก
+        fileDisplay.innerText = input.files[0].name;
+
+        // แสดงรูปตัวอย่างทันทีใน Modal (Live Preview)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('modalImg').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        fileDisplay.innerText = "เลือกรูปใหม่";
+    }
+}
+// แก้ไขฟังก์ชัน toggleEditMode 
+function toggleEditMode(isEdit) {
+    document.getElementById('viewMode').classList.toggle('hidden', isEdit);
+    document.getElementById('editMode').classList.toggle('hidden', !isEdit);
+    document.getElementById('stockControl').classList.toggle('hidden', isEdit);
+    document.getElementById('actionButtons').classList.toggle('hidden', isEdit);
+    
+    if (isEdit) {
+        // ใช้ฟังก์ชันช่วยเช็ค Element กัน Error null (กรณี ID ใน HTML ไม่ตรง)
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val || "";
+        };
+
+        setVal('editNameInput', currentItemData.title);
+        setVal('editDescInput', currentItemData.desc);
+        setVal('editCategoryInput', currentItemData.category);
+        
+        // เน้นใช้ AssetInfo (คอลัมน์ E)
+        setVal('editAssetInfoInput', currentItemData.assetInfo);
+        
+        const fileInput = document.getElementById('editImgFile');
+        if (fileInput) fileInput.value = ""; 
+        
+        const fileDisplay = document.getElementById('fileNameDisplay');
+        if (fileDisplay) fileDisplay.innerText = "เลือกรูปใหม่";
+    } else {
+        document.getElementById('modalImg').src = currentItemData.img;
+    }
+}
+async function saveEdit() {
+    const nameInput = document.getElementById('editNameInput');
+    const descInput = document.getElementById('editDescInput');
+    const catInput = document.getElementById('editCategoryInput');
+    const assetInput = document.getElementById('editAssetInfoInput'); // ดึงจากช่อง Asset
+    const fileInput = document.getElementById('editImgFile');
+
+    if (!nameInput || !nameInput.value) return alert("กรุณาใส่ชื่ออุปกรณ์");
+
+    showToast("กำลังบันทึกข้อมูล...", 0); 
+    
+    let base64Data = "";
+    let fileName = "";
+    const file = fileInput ? fileInput.files[0] : null;
+
+    try {
+        if (file) {
+            base64Data = await resizeImage(file, 400); 
+            fileName = file.name;
+        }
+
+        const payload = {
+            action: "updateItemFull",
+            id: currentItemData.id,
+            name: nameInput.value,
+            category: catInput ? catInput.value : currentItemData.category,
+            // ส่งแค่ assetInfo ไป (ฝั่ง Apps Script จะได้อ่านง่ายๆ)
+            assetInfo: assetInput ? assetInput.value : "", 
+            remark: descInput ? descInput.value : "", 
+            imageDate: base64Data, 
+            imageName: fileName
+        };
+
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        const resultText = await res.text();
+
+        if (resultText.toLowerCase().includes("success")) {
+            showToast("✅ อัปเดตข้อมูลเรียบร้อยแล้ว", 2000);
+            toggleEditMode(false);
+            closeModal();
+            await loadData(); 
+        } else {
+            hideToast(); 
+            alert("บันทึกไม่สำเร็จ: " + resultText);
+        }
+    } catch (e) {
+        hideToast();
+        alert("เกิดข้อผิดพลาด: " + e.message);
+    }
+}
+function resizeImage(file, maxSide = 400) { // เปลี่ยนเป็นคุมด้านที่ยาวที่สุด
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                
+                // คำนวณหาด้านที่ยาวที่สุด เพื่อปรับสัดส่วน
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxSide) {
+                        height *= maxSide / width;
+                        width = maxSide;
+                    }
+                } else {
+                    if (height > maxSide) {
+                        width *= maxSide / height;
+                        height = maxSide;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // บีบคุณภาพลงมาที่ 0.5 เพื่อความชัวร์สำหรับรูปที่รายละเอียดเยอะแบบนี้
+                const base64 = canvas.toDataURL('image/jpeg', 0.8); 
+                const finalString = base64.split(',')[1];
+
+                console.log("ขนาดที่ส่งไป (กว้างxสูง):", width, "x", height);
+                console.log("ความยาว Base64:", finalString.length);
+                
+                resolve(finalString);
+            };
+        };
+    });
+}
+function openModal(id) {
+    const item = data.find(i => String(i.id) === String(id));
+    if (!item) return;
+    currentItemData = item;
+    currentQty = 1;
+
+    // 1. จัดการรูปภาพและชื่อ
+    document.getElementById('modalImg').src = item.img;
+    document.getElementById('modalTitle').innerText = item.title;
+    document.getElementById('modalDesc').innerHTML = (item.desc || "").replace(/\n/g, '<br>');
+
+    // 2. จัดการหมวดหมู่และ AssetInfo (ลบ modalSection ทิ้ง)
+    const modalCat = document.getElementById('modalCategory');
+    if (modalCat) modalCat.innerText = item.category;
+
+    const assetDisplay = document.getElementById('modalAssetInfo');
+    if (assetDisplay) assetDisplay.innerText = item.assetInfo || "-";
+
+    // 3. จัดการจำนวนสต็อก
+    document.getElementById('orderQty').innerText = currentQty;
+    document.getElementById('stockQty').innerText = item.qty;
+
+    // 4. รีเซ็ต Input ไฟล์ (เผื่อจากคราวที่แล้ว)
+    const fileInput = document.getElementById('editImgFile');
+    if (fileInput) fileInput.value = ""; 
+    const fileDisplay = document.getElementById('fileNameDisplay');
+    if (fileDisplay) fileDisplay.innerText = "เปลี่ยนรูปภาพใหม่";
+
+    // 5. ปุ่มลบ (จะโชว์เฉพาะตอนของเหลือ 0)
+    const deleteContainer = document.getElementById('deleteContainer');
+    if (deleteContainer) {
+        deleteContainer.classList.toggle('hidden', item.qty !== 0);
+    }
+
+    // 6. สถานะปุ่มนำออก
+    const orderBtn = document.getElementById('orderBtn');
+    if (orderBtn) {
+        if (item.qty <= 0) {
+            orderBtn.disabled = true;
+            orderBtn.classList.remove("bg-blue-600");
+            orderBtn.classList.add("bg-gray-300");
+            orderBtn.innerText = "ของหมด";
+        } else {
+            orderBtn.disabled = false;
+            orderBtn.classList.remove("bg-gray-300");
+            orderBtn.classList.add("bg-blue-600");
+            orderBtn.innerText = "นำออก";
+        }
+    }
+
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.add('hidden'); }
+function checkClose(e) { if (e.target.id === "detailModal") closeModal(); }
+
+function updateQty(amount) {
+    currentQty += amount;
+    if (currentQty < 1) currentQty = 1; // กันไม่ให้ติดลบหรือเป็น 0
+    // ลบบรรทัดที่เช็ค currentQty > currentItemData.qty ออกไปเลย
+    document.getElementById('orderQty').innerText = currentQty;
+}
+
+async function submitOrder() {
+    if (!currentItemData) return;
+    
+    // เพิ่มการเช็คตรงนี้:
+    if (currentQty > currentItemData.qty) {
+        alert("ไม่สามารถนำออกเกินจำนวนที่มีอยู่ได้! (มีอยู่ " + currentItemData.qty + " ชิ้น)");
+        return;
+    }
+
+    showToast("กำลังดำเนินการ...");
+    await fetch(`${API_URL}?action=order&id=${currentItemData.id}&qty=${currentQty}`);
+    showToast(`นำออก ${currentQty} ชิ้นเรียบร้อย`);
+    closeModal();
+    loadData();
+}
+
+async function addStock() {
+    if (!currentItemData) return;
+    showToast("กำลังดำเนินการ...");
+    await fetch(`${API_URL}?action=addStock&id=${currentItemData.id}&qty=${currentQty}`);
+    showToast(`เพิ่มเข้า ${currentQty} ชิ้นเรียบร้อย`);
+    closeModal();
+    loadData();
+}
+// 1. ฟังก์ชันสลับไปช่องพิมพ์เลขกล่องใหม่
+function showNewCategoryInput() {
+    document.getElementById('selectBoxGroup').classList.add('hidden');
+    document.getElementById('newBoxGroup').classList.remove('hidden');
+    document.getElementById('addCategorySelect').value = ""; // ล้างค่าที่เลือกไว้
+}
+
+// 2. ฟังก์ชันสลับกลับไปเลือกกล่องเดิม
+function hideNewCategoryInput() {
+    document.getElementById('newBoxGroup').classList.add('hidden');
+    document.getElementById('selectBoxGroup').classList.remove('hidden');
+    document.getElementById('addCategory').value = ""; // ล้างค่าที่พิมพ์ไว้
+}
+
+// 3. ฟังก์ชันดึงเลขกล่องที่มีอยู่มาใส่ในตัวเลือก (เรียกใช้ตอนกดเปิด Modal)
+function updateCategoryDropdown() {
+    const select = document.getElementById('addCategorySelect');
+    if (!select) return;
+
+    // ดึงเลขกล่องที่ไม่ซ้ำ และเรียงแบบตัวเลข (1, 2, 10)
+    const categories = [...new Set(data.map(item => item.category))].sort((a, b) => {
+        return String(a).localeCompare(String(b), undefined, { numeric: true });
+    });
+    
+    select.innerHTML = '<option value="">-- เลือกแผนก --</option>';
+    
+    categories.forEach(cat => {
+        if(cat) {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = `แผนก: ${cat}`; // แสดงข้อความใน dropdown
+            select.appendChild(option);
+        }
+    });
+}
+
+
+
+// 5. ปรับปรุงตอนบันทึก (submitNewItem)
+// ในฟังก์ชัน submitNewItem() ให้เช็คค่าแบบนี้:
+// const category = document.getElementById('addCategory').value || document.getElementById('addCategorySelect').value;
+  
+function confirmDelete() {
+    document.getElementById('deleteItemName').innerText = currentItemData.title;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() { document.getElementById('deleteConfirmModal').classList.add('hidden'); }
+
+async function executeDelete() {
+    const btn = document.getElementById('btnRealDelete');
+    btn.disabled = true;
+    btn.innerText = "กำลังลบ...";
+    try {
+        const res = await fetch(`${API_URL}?action=delete&id=${currentItemData.id}`);
+        const text = await res.text();
+        if (text.includes("Success")) {
+            showToast("ลบเรียบร้อย");
+            closeDeleteModal(); closeModal(); loadData();
+        } else { alert("ลบไม่สำเร็จ: " + text); }
+    } catch (e) { alert("Error: " + e.message); }
+    finally { btn.disabled = false; btn.innerText = "ลบเลย"; }
+}
+// 1. ดักจับการพิมพ์ในช่องค้นหา (ปรับให้เรียกใช้ filterData กลางเพื่อความแม่นยำ)
+document.getElementById('searchInput').addEventListener('input', () => {
+    filterData(currentFilter); 
+});
+
+// 2. ปรับปรุงฟังก์ชัน filterData (เพื่อให้กรองทั้ง "คำค้นหา" และ "เลขกล่อง" พร้อมกันเสมอ)
+function filterData(selectedCat) {
+    currentFilter = selectedCat; // เก็บหมวดหมู่ปัจจุบันไว้
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    // กรองข้อมูลโดยเช็คทั้ง หมวดหมู่ และ คำค้นหา
+    const filtered = data.filter(item => {
+        const matchesCat = (selectedCat === "All" || String(item.category) === String(selectedCat));
+        const matchesName = item.title.toLowerCase().includes(searchTerm);
+        return matchesCat && matchesName;
+    });
+
+    renderFilteredItems(filtered);
+}
+
+// 3. ฟังก์ชันแสดงผล (คงเดิม แต่ปรับดีไซน์ตัวหนังสือเลขกล่องให้ชัดขึ้นนิดหน่อย)
+function renderFilteredItems(items) {
+    const container = document.getElementById('content');
+    container.innerHTML = ''; 
+    
+    if (items.length === 0) {
+        container.innerHTML = "<div class='col-span-full text-center py-20 text-gray-400'><i class='fas fa-search mb-2 text-2xl'></i><p>ไม่พบรายการที่ค้นหา</p></div>";
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = currentView === 'grid' 
+            ? "card bg-white border rounded-xl overflow-hidden shadow-sm animate-fadeIn cursor-pointer"
+            : "card bg-white border rounded-xl overflow-hidden shadow-sm animate-fadeIn cursor-pointer flex p-2 gap-3";
+            
+        card.onclick = () => openModal(item.id);
+        
+        if (currentView === 'grid') {
+            card.innerHTML = `
+                <div class="image-container relative">
+                    <div class="badge-box">
+                        <i class="fas fa-building mr-1"></i> ${item.category}
+                    </div>
+
+                    <div class="absolute top-0 right-0 bg-orange-500 text-white text-[8px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">
+                        ${item.assetInfo || "-"}
+                    </div>
+                    
+                    <img src="${item.img}" class="card-img" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                    <div class="badge-reserve">${item.qty} ชิ้น</div>
+                </div>
+                <div class="p-2 text-center">
+                    <h3 class="font-bold text-[10px] truncate text-gray-800">${item.title}</h3>
+                </div>
+            `;
+        } else {
+            card.innerHTML = `
+                <div class="image-container w-20 h-20 flex-shrink-0 relative">
+                    <div class="badge-box">
+                        <i class="fas fa-box"></i> ${item.category}
+                    </div>
+
+                    <div class="absolute top-0 right-0 bg-orange-500 text-white text-[7px] px-1.5 py-0.5 rounded-bl-md font-bold z-10">
+                        ${item.assetInfo || "-"}
+                    </div>
+
+                    <img src="${item.img}" class="w-full h-full object-cover rounded-lg" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center">
+                    <h3 class="font-bold text-sm text-gray-800">${item.title}</h3>
+                    <p class="text-xs text-gray-500 mt-1">คงเหลือ: ${item.qty} ชิ้น</p>
+                </div>
+            `;
+        }
+        container.appendChild(card);
+    });
+}
+function showToast(msg, duration = 2500) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    
+    // แสดง Toast
+    toast.classList.remove("opacity-0");
+    toast.classList.add("opacity-100");
+
+    // ถ้าส่ง duration เป็น 0 คือให้ค้างไว้ (ใช้ตอนกำลังบันทึก)
+    // แต่ถ้ามี duration ให้ตั้งเวลาปิดอัตโนมัติ
+    if (duration > 0) {
+        setTimeout(() => {
+            toast.classList.replace("opacity-100", "opacity-0");
+        }, duration);
+    }
+}
+
+// ฟังก์ชันสำหรับปิด Toast ด้วยมือ (ใช้ตอนบันทึกเสร็จแล้ว)
+function hideToast() {
+    const toast = document.getElementById("toast");
+    toast.classList.replace("opacity-100", "opacity-0");
+}
+
+document.getElementById('viewSwitcher').onclick = () => {
+    // 1. สลับค่า view
+    currentView = currentView === 'grid' ? 'list' : 'grid';
+    
+    // 2. เปลี่ยน Icon ของปุ่ม
+    const icon = document.getElementById('viewSwitcher').querySelector('i');
+    icon.className = currentView === 'grid' ? 'fas fa-list-ul' : 'fas fa-th-large';
+    
+    // 3. เปลี่ยน Class ของ container หลัก
+    const content = document.getElementById('content');
+    content.className = currentView === 'grid' ? 'grid-view' : 'list-view';
+    
+    // 4. *** สำคัญมาก: สั่งให้วาดข้อมูลใหม่ตาม View ที่เลือก ***
+    filterData(currentFilter); 
+};
+
+// ฟังก์ชันเปิด Modal เพิ่มข้อมูล
+function goAdd() {
+    document.getElementById('addName').value = "";
+    document.getElementById('addCategory').value = "";
+    document.getElementById('addAssetInfo').value = ""; // ล้างค่าแผนก/หมายเลขทรัพย์สิน
+    document.getElementById('addQty').value = "1";
+    document.getElementById('addRemark').value = "";
+    document.getElementById('addImgFile').value = "";
+    document.getElementById('addImgPreviewContainer').classList.add('hidden');
+    document.getElementById('addFileNameDisplay').innerText = "เลือกรูปภาพ";
+    updateCategoryDropdown(); 
+    hideNewCategoryInput();  
+    document.getElementById('addModal').classList.remove('hidden');
+}
+
+function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+function checkCloseAdd(e) { if (e.target.id === "addModal") closeAddModal(); }
+
+// ดูตัวอย่างรูปก่อนอัปโหลด
+function previewAddImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('addImgPreview').src = e.target.result;
+            document.getElementById('addImgPreviewContainer').classList.remove('hidden');
+            document.getElementById('addFileNameDisplay').innerText = input.files[0].name;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+async function submitNewItem() {
+    // 1. ดึงค่าตาม ID เดิมในหน้า HTML ของคุณ
+    const name = document.getElementById('addName').value;
+    const categoryInput = document.getElementById('addCategory').value; 
+    const categorySelect = document.getElementById('addCategorySelect').value; 
+    const category = categoryInput || categorySelect; 
+    const assetInfo = document.getElementById('addAssetInfo').value; 
+    const qty = document.getElementById('addQty').value;
+    const remark = document.getElementById('addRemark').value;
+    const fileInput = document.getElementById('addImgFile');
+    const file = fileInput.files[0];
+
+    // ตรวจสอบค่าว่างเบื้องต้น
+    if (!name) return alert("กรุณาใส่ชื่ออุปกรณ์");
+    if (!category) return alert("กรุณาระบุเลขกล่องหรือหมวดหมู่");
+
+    // 2. แสดง Toast ค้างไว้ (หน้าสุด)
+    showToast("กำลังบันทึกข้อมูล...", 0); 
+    
+    let base64Data = "";
+
+    try {
+        // ย่อรูปภาพ
+        if (file) {
+            base64Data = await resizeImage(file, 500); 
+        }
+
+        const payload = {
+            action: "addItem", 
+            name: name,
+            category: category,
+            qty: qty,
+            remark: remark,
+            assetInfo: assetInfo, 
+            imageDate: base64Data, 
+            imageName: file ? file.name : ""
+        };
+
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        const resultText = await res.text();
+        
+        // 3. ตรวจสอบผลลัพธ์
+        if (resultText.toLowerCase().includes("success")) {
+            showToast("✅ เพิ่มรายการเรียบร้อยแล้ว", 2500);
+            
+            // ล้างค่าฟอร์ม และปิด Modal
+            closeAddModal();
+            loadData(); 
+            
+            // ล้างค่าใน Input (Optional)
+            document.getElementById('addName').value = "";
+            document.getElementById('addQty').value = "";
+            document.getElementById('addRemark').value = "";
+            document.getElementById('addImgFile').value = "";
+        } else {
+            hideToast(); // ปิด Toast ก่อนโชว์ Alert
+            alert("เกิดข้อผิดพลาดจาก Server: " + resultText);
+        }
+    } catch (e) {
+        hideToast();
+        console.error("Fetch Error:", e);
+        alert("การเชื่อมต่อขัดข้อง: " + e.message);
+    }
+}
+// ฟังก์ชันจัดการแถบ Category Scroll (Mouse Wheel & Drag)
+const categoryBarEl = document.getElementById('categoryBar');
+
+categoryBarEl.addEventListener('wheel', (e) => {
+    if (e.deltaY !== 0) {
+        e.preventDefault();
+        categoryBarEl.scrollLeft += e.deltaY;
+    }
+}, { passive: false });
+
+let isDown = false;
+let startX;
+let scrollLeft;
+
+categoryBarEl.addEventListener('mousedown', (e) => {
+    isDown = true;
+    startX = e.pageX - categoryBarEl.offsetLeft;
+    scrollLeft = categoryBarEl.scrollLeft;
+});
+
+categoryBarEl.addEventListener('mouseleave', () => { isDown = false; });
+categoryBarEl.addEventListener('mouseup', () => { isDown = false; });
+categoryBarEl.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - categoryBarEl.offsetLeft;
+    const walk = (x - startX) * 2;
+    categoryBarEl.scrollLeft = scrollLeft - walk;
+});
+
+// เริ่มโหลดข้อมูลครั้งแรก
+loadData();
+</script>
+</body>
+</html>
