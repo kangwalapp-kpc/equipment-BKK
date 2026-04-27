@@ -851,38 +851,34 @@ function renderFilteredItems(items) {
         if (currentView === 'grid') {
             card.innerHTML = `
                 <div class="image-container relative">
-                    <div class="badge-box">
+                    <div class="absolute bottom-1.5 left-1.5 z-10 bg-blue-600/80 backdrop-blur-sm text-white text-[8px] px-2 py-1 rounded-lg font-bold flex items-center shadow-sm border border-white/10">
                         <i class="fas fa-building mr-1"></i> ${item.category}
                     </div>
 
-                    <div class="absolute top-0 right-0 bg-orange-500 text-white text-[8px] px-2 py-1 rounded-bl-lg font-bold shadow-sm z-10">
+                    <div class="absolute top-1.5 right-1.5 bg-orange-500 text-white text-[8px] px-2 py-1 rounded-lg font-bold shadow-sm z-10 border border-white/10">
                         ${item.assetInfo || "-"}
                     </div>
                     
                     <img src="${item.img}" class="card-img" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-                    <div class="badge-reserve">${item.qty} ชิ้น</div>
-                </div>
+                    
+                    </div>
                 <div class="p-2 text-center">
                     <h3 class="font-bold text-[10px] truncate text-gray-800">${item.title}</h3>
                 </div>
             `;
         } else {
+            // แบบ List View (เอาจำนวนชิ้นออกเช่นกัน)
             card.innerHTML = `
                 <div class="image-container w-20 h-20 flex-shrink-0 relative">
-                    <div class="badge-box">
-                        <i class="fas fa-box"></i> ${item.category}
+                    <div class="absolute bottom-1 left-1 z-10 bg-blue-600/80 backdrop-blur-sm text-[7px] text-white px-1.5 py-0.5 rounded-md font-bold">
+                         ${item.category}
                     </div>
-
-                    <div class="absolute top-0 right-0 bg-orange-500 text-white text-[7px] px-1.5 py-0.5 rounded-bl-md font-bold z-10">
-                        ${item.assetInfo || "-"}
-                    </div>
-
                     <img src="${item.img}" class="w-full h-full object-cover rounded-lg" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
                 </div>
                 
                 <div class="flex-1 flex flex-col justify-center">
                     <h3 class="font-bold text-sm text-gray-800">${item.title}</h3>
-                    <p class="text-xs text-gray-500 mt-1">คงเหลือ: ${item.qty} ชิ้น</p>
+                    <p class="text-[10px] text-orange-500 font-bold mt-0.5">Asset: ${item.assetInfo || "-"}</p>
                 </div>
             `;
         }
